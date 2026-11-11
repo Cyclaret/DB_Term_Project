@@ -8,6 +8,7 @@ const employeeRoutes = require('./routes/employeeRoutes');
 const assetRoutes = require('./routes/assetRoutes');
 const softwareRoutes = require('./routes/softwareRoutes');
 const licenseRoutes = require('./routes/licenseRoutes');
+const assetRequestRoutes = require('./routes/assetRequestRoutes');
 
 
 const app = express();
@@ -55,6 +56,9 @@ app.use('/api/softwares', softwareRoutes);
 
 // 라이센스 API
 app.use('/api/licenses', licenseRoutes);
+
+// 자산 신청 API
+app.use('/api/asset-requests', assetRequestRoutes);
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
