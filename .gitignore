@@ -1,2 +1,13 @@
+# macOS
 **/.DS_Store
 ._.DS_Store
+
+# Node.js
+node_modules/
+
+# 환경변수 (DB 비밀번호 등)
+.env
+.env.*
+
+# 로그
+*.log
