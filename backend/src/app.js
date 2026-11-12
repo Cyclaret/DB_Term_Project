@@ -9,7 +9,7 @@ const assetRoutes = require('./routes/assetRoutes');
 const softwareRoutes = require('./routes/softwareRoutes');
 const licenseRoutes = require('./routes/licenseRoutes');
 const assetRequestRoutes = require('./routes/assetRequestRoutes');
-
+const assetAssignmentRoutes = require('./routes/assetAssignmentRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -59,6 +59,9 @@ app.use('/api/licenses', licenseRoutes);
 
 // 자산 신청 API
 app.use('/api/asset-requests', assetRequestRoutes);
+
+// 자산 배정 API
+app.use('/api/asset-assignments', assetAssignmentRoutes);
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
