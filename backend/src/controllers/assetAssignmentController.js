@@ -11,7 +11,7 @@ const assetAssignmentService = require('../services/assetAssignmentService');
 // 1. 자산 배정 내역 조회
 async function getAllAssetAssignments(req, res) {
     try {
-        const assignments = await assetAssignmentService.getAllAssetAssignments();
+        const assignments = await assetAssignmentService.getAllAssetAssignments(req.recordEmployeeId);
 
         res.status(200).json({
             success: true,
@@ -31,7 +31,7 @@ async function getAllAssetAssignments(req, res) {
 // 2. 승인된 신청에 자산 배정
 async function createAssetAssignment(req, res) {
     try {
-        const { request_id, asset_id } = req.body;
+        const { request_id, asset_id } = req.body ?? {};
 
         // 입력값 검증
         if (

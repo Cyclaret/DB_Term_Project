@@ -7,8 +7,8 @@ function httpError(message, statusCode) {
 }
 
 // 1. 라이선스 배정 내역 조회
-async function getAllLicenseAssignments() {
-    const [rows] = await pool.query(`
+async function getAllLicenseAssignments(employeeId) {
+    const [rows] = await pool.execute(`
         SELECT
             la.assignment_id,
             la.employee_id,
@@ -22,8 +22,9 @@ async function getAllLicenseAssignments() {
         JOIN Employee e ON la.employee_id = e.employee_id
         JOIN License l ON la.license_id = l.license_id
         JOIN Software s ON l.software_id = s.software_id
+        ${employeeId === undefined ? '' : 'WHERE la.employee_id = ?'}
         ORDER BY la.assignment_id DESC
-    `);
+    `, employeeId === undefined ? [] : [employeeId]);
 
     return rows;
 }

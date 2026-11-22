@@ -2,16 +2,17 @@
 
 const express = require('express');
 const router = express.Router();
+const { requireAdmin, scopeEmployeeRecords } = require('../middleware/session');
 
 const assetAssignmentController = require('../controllers/assetAssignmentController');
 
 // 자산 배정 내역 조회
-router.get('/', assetAssignmentController.getAllAssetAssignments);
+router.get('/', scopeEmployeeRecords, assetAssignmentController.getAllAssetAssignments);
 
 // 자산 배정
-router.post('/', assetAssignmentController.createAssetAssignment);
+router.post('/', requireAdmin, assetAssignmentController.createAssetAssignment);
 
 // 자산 반납
-router.patch('/:id/return', assetAssignmentController.returnAssetAssignment);
+router.patch('/:id/return', requireAdmin, assetAssignmentController.returnAssetAssignment);
 
 module.exports = router;

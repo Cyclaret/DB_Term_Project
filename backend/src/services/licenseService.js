@@ -6,9 +6,12 @@ async function getAllLicenses() {
     const [rows] = await pool.query(
         `SELECT
             l.license_id,
+            l.software_id,
             s.software_name,
             l.total_seats,
             l.expiration_date,
+            DATE_FORMAT(l.expiration_date, '%Y-%m-%d') AS expiration_day,
+            l.expiration_date < CURRENT_DATE AS is_expired,
             l.total_seats - (
                 SELECT COUNT(*)
                 FROM LicenseAssignment la

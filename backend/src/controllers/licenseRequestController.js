@@ -3,16 +3,15 @@ const licenseRequestService = require('../services/licenseRequestService');
 // 라이선스 신청 등록
 async function createLicenseRequest(req, res) {
     try {
-        const employeeId = Number(req.body.employee_id);
-        const softwareId = Number(req.body.software_id);
+        const employeeId = req.employee.employee_id;
+        const softwareId = req.body?.software_id;
 
         if (
-            !Number.isSafeInteger(employeeId) || employeeId <= 0 ||
             !Number.isSafeInteger(softwareId) || softwareId <= 0
         ) {
             return res.status(400).json({
                 success: false,
-                message: '유효한 직원 ID와 소프트웨어 ID를 입력해야 합니다.'
+                message: '유효한 소프트웨어를 선택해 주세요.'
             });
         }
 
@@ -27,6 +26,9 @@ async function createLicenseRequest(req, res) {
         });
 
     } catch (error) {
+        if (error.code === 'ER_NO_REFERENCED_ROW_2') {
+            return res.status(400).json({ success: false, message: '직원 또는 소프트웨어를 찾을 수 없습니다.' });
+        }
         console.error('라이선스 신청 오류:', error);
 
         res.status(error.statusCode || 500).json({
@@ -39,7 +41,7 @@ async function createLicenseRequest(req, res) {
 // 라이선스 신청 목록 조회
 async function getAllLicenseRequests(req, res) {
     try {
-        const requests = await licenseRequestService.getAllLicenseRequests();
+        const requests = await licenseRequestService.getAllLicenseRequests(req.recordEmployeeId);
 
         res.status(200).json({
             success: true,
@@ -60,17 +62,16 @@ async function getAllLicenseRequests(req, res) {
 async function updateLicenseRequestStatus(req, res) {
     try {
         const requestId = Number(req.params.id);
-        const { status, admin_id } = req.body;
-        const adminId = Number(admin_id);
+        const { status } = req.body ?? {};
+        const adminId = req.employee.employee_id;
 
         if (
             !Number.isSafeInteger(requestId) || requestId <= 0 ||
-            !Number.isSafeInteger(adminId) || adminId <= 0 ||
             !['APPROVED', 'REJECTED'].includes(status)
         ) {
             return res.status(400).json({
                 success: false,
-                message: '유효한 신청 ID, 관리자 ID, 상태를 입력해야 합니다.'
+                message: '유효한 신청 ID와 처리 상태를 입력해야 합니다.'
             });
         }
 

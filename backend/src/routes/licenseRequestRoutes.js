@@ -6,13 +6,14 @@ PATCH : /api/license-requests/:id   신청 승인 또는 거절
 
 const express = require('express');
 const router = express.Router();
+const { requireAdmin, scopeEmployeeRecords } = require('../middleware/session');
 
 const licenseRequestController = require('../controllers/licenseRequestController');
 
-router.get('/', licenseRequestController.getAllLicenseRequests);
+router.get('/', scopeEmployeeRecords, licenseRequestController.getAllLicenseRequests);
 
 router.post('/', licenseRequestController.createLicenseRequest);
 
-router.patch('/:id', licenseRequestController.updateLicenseRequestStatus);
+router.patch('/:id', requireAdmin, licenseRequestController.updateLicenseRequestStatus);
 
 module.exports = router;

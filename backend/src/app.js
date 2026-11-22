@@ -1,7 +1,9 @@
 const express = require('express');
+const path = require('node:path');
 require('dotenv').config();
 
-// const pool = require('./config/db');
+const { login, logout, requireSession, requireAdmin } = require('./middleware/session');
+const inventory = require('./controllers/inventoryController');
 
 // 아래가 라우팅.
 const employeeRoutes = require('./routes/employeeRoutes');
@@ -15,6 +17,9 @@ const licenseAssignmentRoutes = require('./routes/licenseAssignmentRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const frontend = path.join(__dirname, '..', '..', 'frontend');
+
+app.disable('x-powered-by');
 
 app.use(express.json());
 
@@ -26,29 +31,22 @@ app.get('/', (req, res) => {
     });
 });
 
-// // 테스트 URL 정상 실행 시 아래 쿼리가 실행된다. 테스트용이므로 주석.
-// app.get('/db-test', async (req, res) => {
-//     try {
-//         const [rows] = await pool.query(
-//             'SELECT employee_id, name, department, role FROM Employee'
-//         );
+// 프런트엔드와 API를 같은 서버에서 제공한다.
+app.use('/ui', express.static(frontend));
+app.get('/admin', (req, res) => res.redirect('/ui/'));
 
-//         res.json({
-//             success: true,
-//             data: rows
-//         });
-//     } catch (error) {
-//         console.error('DB Error:', error.message);
-
-//         res.status(500).json({
-//             success: false,
-//             message: 'Database connection failed'
-//         });
-//     }
-// });
+app.use('/api', (req, res, next) => {
+    res.setHeader('Cache-Control', 'no-store');
+    next();
+});
+app.post('/api/session', login);
+app.delete('/api/session', logout);
+app.use('/api', requireSession);
+app.get('/api/session', (req, res) => res.json({ success: true, data: req.employee }));
+app.get('/api/asset-categories', inventory.getCategories);
 
 // 직원 API
-app.use('/api/employees', employeeRoutes);
+app.use('/api/employees', requireAdmin, employeeRoutes);
 
 // 자산 API
 app.use('/api/assets', assetRoutes);
@@ -71,6 +69,30 @@ app.use('/api/license-requests', licenseRequestRoutes);
 // 라이선스 배정 API
 app.use('/api/license-assignments', licenseAssignmentRoutes);
 
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+app.use('/api', (req, res) => {
+    res.status(404).json({ success: false, message: 'API 경로를 찾을 수 없습니다.' });
 });
+
+app.use((error, req, res, next) => {
+    if (res.headersSent || !req.originalUrl.startsWith('/api/')) return next(error);
+
+    const messages = {
+        ER_NO_REFERENCED_ROW_2: [400, '참조한 카테고리 또는 소프트웨어를 찾을 수 없습니다.'],
+        ER_ROW_IS_REFERENCED_2: [409, '배정 이력이 있는 자산은 삭제할 수 없습니다.']
+    };
+    const [status, message] = messages[error.code] || [
+        error.statusCode || 500,
+        error.type === 'entity.parse.failed' ? '요청 본문 형식을 확인해 주세요.' : error.message
+    ];
+    if (status >= 500) console.error('API 오류:', error);
+    return res.status(status).json({
+        success: false,
+        message: status >= 500 ? '서버에서 요청을 처리하지 못했습니다.' : message
+    });
+});
+
+if (require.main === module) {
+    app.listen(PORT, '127.0.0.1', () => console.log('Server running on port ' + PORT));
+}
+
+module.exports = app;

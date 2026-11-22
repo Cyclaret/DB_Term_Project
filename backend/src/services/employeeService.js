@@ -12,6 +12,12 @@ async function getAllEmployees() {
     return rows;
 }
 
-module.exports = {
-    getAllEmployees
-};
+async function getEmployeeById(employeeId) {
+    const [rows] = await pool.execute(
+        'SELECT employee_id, name, department, role FROM Employee WHERE employee_id = ?',
+        [employeeId]
+    );
+    return rows[0];
+}
+
+module.exports = { getAllEmployees, getEmployeeById };

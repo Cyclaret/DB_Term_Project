@@ -22,8 +22,8 @@ async function createLicenseRequest(employeeId, softwareId) {
 }
 
 // 라이선스 신청 목록 조회
-async function getAllLicenseRequests() {
-    const [rows] = await pool.query(
+async function getAllLicenseRequests(employeeId) {
+    const [rows] = await pool.execute(
         `SELECT
             lr.request_id,
             lr.employee_id,
@@ -37,7 +37,9 @@ async function getAllLicenseRequests() {
          FROM LicenseRequest lr
          JOIN Employee e ON lr.employee_id = e.employee_id
          JOIN Software s ON lr.software_id = s.software_id
-         ORDER BY lr.request_id DESC`
+         ${employeeId === undefined ? '' : 'WHERE lr.employee_id = ?'}
+        ORDER BY lr.request_id DESC`,
+        employeeId === undefined ? [] : [employeeId]
     );
 
     return rows;

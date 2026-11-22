@@ -12,8 +12,8 @@ function httpError(message, statusCode) {
 }
 
 // 1. 자산 배정 내역 조회
-async function getAllAssetAssignments() {
-    const [rows] = await pool.query(`
+async function getAllAssetAssignments(employeeId) {
+    const [rows] = await pool.execute(`
         SELECT
             aa.assignment_id,
             aa.employee_id,
@@ -26,8 +26,9 @@ async function getAllAssetAssignments() {
         FROM AssetAssignment aa
         JOIN Employee e ON aa.employee_id = e.employee_id
         JOIN Asset a ON aa.asset_id = a.asset_id
+        ${employeeId === undefined ? '' : 'WHERE aa.employee_id = ?'}
         ORDER BY aa.assignment_id DESC
-    `);
+    `, employeeId === undefined ? [] : [employeeId]);
 
     return rows;
 }

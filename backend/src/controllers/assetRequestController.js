@@ -4,16 +4,23 @@ const assetRequestService = require('../services/assetRequestService');
 
 async function createAssetRequest(req, res) {
     try {
-        const { employee_id, category_id } = req.body;
+        const employeeId = req.employee.employee_id;
+        const categoryId = req.body?.category_id;
+        if (!Number.isSafeInteger(categoryId) || categoryId <= 0) {
+            return res.status(400).json({ success: false, message: '유효한 카테고리를 선택해 주세요.' });
+        }
 
         const result = await assetRequestService.createAssetRequest(
-            employee_id, category_id
+            employeeId, categoryId
         );
 
         res.status(201).json({
             success: true, request_id: result.request_id
         });
     } catch (error) {
+        if (error.code === 'ER_NO_REFERENCED_ROW_2') {
+            return res.status(400).json({ success: false, message: '직원 또는 카테고리를 찾을 수 없습니다.' });
+        }
         console.error(error);
 
         res.status(500).json({
@@ -24,7 +31,7 @@ async function createAssetRequest(req, res) {
 
 async function getAllAssetRequests(req, res) {
     try {
-        const requests = await assetRequestService.getAllAssetRequests();
+        const requests = await assetRequestService.getAllAssetRequests(req.recordEmployeeId);
 
         res.status(200).json({
             success: true,
@@ -43,18 +50,17 @@ async function getAllAssetRequests(req, res) {
 async function updateAssetRequestStatus(req, res) {
     try {
         const requestId = Number(req.params.id);
-        const { status, admin_id } = req.body;
-        const adminId = Number(admin_id);
+        const { status } = req.body ?? {};
+        const adminId = req.employee.employee_id;
 
         // 1. 입력값 검증
         if (
             !Number.isSafeInteger(requestId) || requestId <= 0 ||
-            !Number.isSafeInteger(adminId) || adminId <= 0 ||
             !['APPROVED', 'REJECTED'].includes(status)
         ) {
             return res.status(400).json({
                 success: false,
-                message: '유효한 신청 ID, 관리자 ID, 처리 상태를 입력해야 합니다.'
+                message: '유효한 신청 ID와 처리 상태를 입력해야 합니다.'
             });
         }
 

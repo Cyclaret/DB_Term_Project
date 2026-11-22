@@ -2,16 +2,17 @@
 
 const express = require('express');
 const router = express.Router();
+const { requireAdmin, scopeEmployeeRecords } = require('../middleware/session');
 
 const licenseAssignmentController = require('../controllers/licenseAssignmentController');
 
 // 라이선스 배정 내역 조회
-router.get('/', licenseAssignmentController.getAllLicenseAssignments);
+router.get('/', scopeEmployeeRecords, licenseAssignmentController.getAllLicenseAssignments);
 
 // 라이선스 배정
-router.post('/', licenseAssignmentController.createLicenseAssignment);
+router.post('/', requireAdmin, licenseAssignmentController.createLicenseAssignment);
 
 // 라이선스 반납
-router.patch('/:id/return', licenseAssignmentController.returnLicenseAssignment);
+router.patch('/:id/return', requireAdmin, licenseAssignmentController.returnLicenseAssignment);
 
 module.exports = router;

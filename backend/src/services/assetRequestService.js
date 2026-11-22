@@ -19,8 +19,8 @@ async function createAssetRequest(employeeId, categoryId) {
 }
 
 // 직원의 신청 목록 조회
-async function getAllAssetRequests() {
-    const [rows] = await pool.query(
+async function getAllAssetRequests(employeeId) {
+    const [rows] = await pool.execute(
         `SELECT
             ar.request_id,
             ar.employee_id,
@@ -36,7 +36,9 @@ async function getAllAssetRequests() {
             ON ar.employee_id = e.employee_id
          JOIN AssetCategory c
             ON ar.category_id = c.category_id
-         ORDER BY ar.request_id DESC`
+         ${employeeId === undefined ? '' : 'WHERE ar.employee_id = ?'}
+        ORDER BY ar.request_id DESC`,
+        employeeId === undefined ? [] : [employeeId]
     );
 
     return rows;

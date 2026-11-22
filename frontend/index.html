@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ITAMS · IT 자산 관리</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <main id="login" class="login" hidden>
+    <section class="login-card">
+      <div class="brand"><span class="brand-mark" aria-hidden="true">IT</span> ITAMS</div>
+      <h1>IT 자산 관리</h1>
+      <form id="login-form">
+        <label>직원 번호 <input name="employee_id" type="number" min="1" step="1" required></label>
+        <button class="primary" type="submit">로그인</button>
+      </form>
+      <p id="login-error" class="error" role="alert"></p>
+    </section>
+  </main>
+
+  <div id="workspace" class="workspace" hidden>
+    <aside class="sidebar">
+      <div class="brand"><span class="brand-mark" aria-hidden="true">IT</span> ITAMS</div>
+      <nav id="navigation" aria-label="업무 메뉴"></nav>
+      <div class="identity">
+        <span id="identity-role" class="identity-role"></span>
+        <strong id="identity-name"></strong>
+        <button id="logout" class="secondary" type="button">로그아웃</button>
+      </div>
+    </aside>
+    <main class="content">
+      <header class="page-header">
+        <h1 id="page-title"></h1>
+        <button id="refresh" class="secondary" type="button">새로고침</button>
+      </header>
+      <p id="notice" class="notice" role="status" hidden></p>
+      <div id="view"></div>
+    </main>
+  </div>
+
+  <dialog id="editor" aria-labelledby="editor-title">
+    <form id="editor-form">
+      <h2 id="editor-title"></h2>
+      <div id="editor-fields" class="fields"></div>
+      <p id="editor-error" class="error" role="alert"></p>
+      <div class="dialog-actions">
+        <button id="cancel-editor" class="secondary" type="button">취소</button>
+        <button id="save-editor" class="primary" type="submit">저장</button>
+      </div>
+    </form>
+  </dialog>
+</body>
+</html>

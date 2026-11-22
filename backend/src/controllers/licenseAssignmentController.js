@@ -11,7 +11,7 @@ const licenseAssignmentService = require('../services/licenseAssignmentService')
 // 1. 라이선스 배정 내역 조회
 async function getAllLicenseAssignments(req, res) {
     try {
-        const assignments = await licenseAssignmentService.getAllLicenseAssignments();
+        const assignments = await licenseAssignmentService.getAllLicenseAssignments(req.recordEmployeeId);
 
         res.status(200).json({
             success: true,
