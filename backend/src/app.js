@@ -11,6 +11,7 @@ const licenseRoutes = require('./routes/licenseRoutes');
 const assetRequestRoutes = require('./routes/assetRequestRoutes');
 const assetAssignmentRoutes = require('./routes/assetAssignmentRoutes');
 const licenseRequestRoutes = require('./routes/licenseRequestRoutes');
+const licenseAssignmentRoutes = require('./routes/licenseAssignmentRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -66,6 +67,9 @@ app.use('/api/asset-assignments', assetAssignmentRoutes);
 
 // 라이센스 신청 API
 app.use('/api/license-requests', licenseRequestRoutes);
+
+// 라이선스 배정 API
+app.use('/api/license-assignments', licenseAssignmentRoutes);
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);

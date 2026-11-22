@@ -8,7 +8,12 @@ async function getAllLicenses() {
             l.license_id,
             s.software_name,
             l.total_seats,
-            expiration_date
+            l.expiration_date,
+            l.total_seats - (
+                SELECT COUNT(*)
+                FROM LicenseAssignment la
+                WHERE la.license_id = l.license_id AND la.returned_at IS NULL
+            ) AS remaining_seats
         FROM License l
         JOIN Software s
             ON l.software_id = s.software_id
