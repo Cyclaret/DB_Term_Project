@@ -10,6 +10,8 @@ const pool = mysql.createPool({
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
+    // MySQL 컨테이너의 UTC DATETIME을 서버 로컬 시간으로 해석하지 않는다.
+    timezone: 'Z',
 
     waitForConnections: true,
     connectionLimit: 10,
