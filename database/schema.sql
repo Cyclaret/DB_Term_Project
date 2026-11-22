@@ -150,6 +150,12 @@ CREATE TABLE LicenseRequest (
     processed_at DATETIME NULL,
     processed_by INT NULL,
 
+    -- 승인 대기인 신청만 직원과 소프트웨어 조합을 고유하게 유지한다.
+    pending_software_id INT GENERATED ALWAYS AS (
+        CASE WHEN status = 'PENDING' THEN software_id ELSE NULL END
+    ) VIRTUAL,
+    UNIQUE KEY uq_licenserequest_pending (employee_id, pending_software_id),
+
     CONSTRAINT fk_licenserequest_employee
         FOREIGN KEY (employee_id)
         REFERENCES Employee(employee_id),

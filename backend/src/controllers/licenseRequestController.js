@@ -26,6 +26,12 @@ async function createLicenseRequest(req, res) {
         });
 
     } catch (error) {
+        if (error.code === 'ER_DUP_ENTRY' && error.sqlMessage?.includes('uq_licenserequest_pending')) {
+            return res.status(409).json({
+                success: false,
+                message: '이 소프트웨어는 이미 승인 대기 중인 신청이 있습니다.'
+            });
+        }
         if (error.code === 'ER_NO_REFERENCED_ROW_2') {
             return res.status(400).json({ success: false, message: '직원 또는 소프트웨어를 찾을 수 없습니다.' });
         }
