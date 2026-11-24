@@ -29,6 +29,11 @@ async function getAllAssetRequests(employeeId) {
             c.category_name,
             ar.request_date,
             ar.status,
+            CASE
+                WHEN assignment.assignment_id IS NULL THEN ar.status
+                WHEN assignment.returned_at IS NULL THEN 'ASSIGNED'
+                ELSE 'RETURNED'
+            END AS display_status,
             ar.processed_at,
             ar.processed_by
          FROM AssetRequest ar
@@ -36,6 +41,7 @@ async function getAllAssetRequests(employeeId) {
             ON ar.employee_id = e.employee_id
          JOIN AssetCategory c
             ON ar.category_id = c.category_id
+         LEFT JOIN AssetAssignment assignment ON assignment.request_id = ar.request_id
          ${employeeId === undefined ? '' : 'WHERE ar.employee_id = ?'}
         ORDER BY ar.request_id DESC`,
         employeeId === undefined ? [] : [employeeId]

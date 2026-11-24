@@ -32,11 +32,17 @@ async function getAllLicenseRequests(employeeId) {
             s.software_name,
             lr.request_date,
             lr.status,
+            CASE
+                WHEN assignment.assignment_id IS NULL THEN lr.status
+                WHEN assignment.returned_at IS NULL THEN 'ASSIGNED'
+                ELSE 'RETURNED'
+            END AS display_status,
             lr.processed_at,
             lr.processed_by
          FROM LicenseRequest lr
          JOIN Employee e ON lr.employee_id = e.employee_id
          JOIN Software s ON lr.software_id = s.software_id
+         LEFT JOIN LicenseAssignment assignment ON assignment.request_id = lr.request_id
          ${employeeId === undefined ? '' : 'WHERE lr.employee_id = ?'}
         ORDER BY lr.request_id DESC`,
         employeeId === undefined ? [] : [employeeId]

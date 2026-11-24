@@ -12,8 +12,11 @@ const routes = {
 };
 const stateLabels = {
     AVAILABLE: '배정 가능', ASSIGNED: '배정 중', MAINTENANCE: '점검 중',
+    RETURNED: '회수 완료',
     PENDING: '승인 대기', APPROVED: '승인', REJECTED: '거절', EXPIRED: '만료'
 };
+const requestStateLabels = { ...stateLabels, ASSIGNED: '배정 완료' };
+const requestStates = ['PENDING', 'APPROVED', 'ASSIGNED', 'RETURNED', 'REJECTED'];
 const resources = {
     asset: { requests: 'assetRequests', assignments: 'assetAssignments', inventory: 'assets',
         related: 'categories', target: 'category_id', title: '자산', item: 'asset_id',
@@ -102,8 +105,8 @@ function button(label, action, id = '', style = 'secondary') {
     return `<button type="button" class="${style}" data-action="${action}" data-id="${escapeHtml(id)}">${label}</button>`;
 }
 
-function pill(status) {
-    return `<span class="pill" data-state="${escapeHtml(status)}">${escapeHtml(stateLabels[status] || status)}</span>`;
+function pill(status, labels = stateLabels) {
+    return `<span class="pill" data-state="${escapeHtml(status)}">${escapeHtml(labels[status] || status)}</span>`;
 }
 
 function panel(title, columns, rows, actions = '') {
@@ -138,22 +141,21 @@ function candidates(kind, request) {
 function requestPanel(kind) {
     const resource = resources[kind];
     const action = isAdmin() ? '' : button('신청하기', 'request-' + kind, '', 'primary');
-    const assignments = new Set((data[resource.assignments] ?? []).map(row => row.request_id));
     const rows = (data[resource.requests] ?? []).filter(row => !filters.requestStatus ||
-        row.status === filters.requestStatus).map(row => {
+        row.display_status === filters.requestStatus).map(row => {
         let controls = '';
         if (isAdmin() && row.status === 'PENDING') {
             controls = button('승인', 'approve-' + kind, row.request_id, 'primary') +
                 button('거절', 'reject-' + kind, row.request_id);
         }
-        if (isAdmin() && row.status === 'APPROVED') {
-            if (assignments.has(row.request_id)) controls = '배정 이력 있음';
-            else if (candidates(kind, row).length) controls = button('배정', 'assign-' + kind, row.request_id, 'primary');
-            else controls = '배정 가능한 항목 없음';
+        if (isAdmin() && row.display_status === 'APPROVED') {
+            controls = candidates(kind, row).length
+                ? button('배정', 'assign-' + kind, row.request_id, 'primary')
+                : '배정 가능한 항목 없음';
         }
         return [
             row.request_id, ...(isAdmin() ? [escapeHtml(row.employee_name)] : []),
-            escapeHtml(row[resource.targetName]), pill(row.status), timestamp(row.request_date),
+            escapeHtml(row[resource.targetName]), pill(row.display_status, requestStateLabels), timestamp(row.request_date),
             ...(isAdmin() ? [`<div class="row-actions">${controls || '—'}</div>`] : [])
         ];
     });
@@ -242,7 +244,7 @@ function render() {
     const views = {
         assets: assetPage, licenses: licensePage, assignments: assignmentPage,
         requests: () => `<div class="controls filters">${filterSelect('처리 상태', 'requestStatus',
-            [['', '전체'], ...['PENDING', 'APPROVED', 'REJECTED'].map(key => [key, stateLabels[key]])])}</div>` +
+            [['', '전체'], ...requestStates.map(key => [key, requestStateLabels[key]])])}</div>` +
             requestPanel('asset') + requestPanel('license')
     };
     $('view').innerHTML = views[page]();
