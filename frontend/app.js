@@ -108,7 +108,7 @@ function pill(status) {
 
 function panel(title, columns, rows, actions = '') {
     const header = `<div class="panel-header"><h2>${title}</h2><div class="controls">${actions}</div></div>`;
-    if (!rows.length) return `<section class="panel">${header}<p class="empty">표시할 내역이 없어.</p></section>`;
+    if (!rows.length) return `<section class="panel">${header}<p class="empty">표시할 내역이 없습니다.</p></section>`;
     const headings = columns.map(label => `<th scope="col">${label}</th>`).join('');
     const body = rows.map(row => '<tr>' + row.map(cell => `<td>${cell}</td>`).join('') + '</tr>').join('');
     return `<section class="panel">${header}<div class="table-scroll"><table aria-label="${title}">
@@ -338,12 +338,12 @@ async function perform(send, errorTarget) {
     try {
         await send();
         if ($('editor').open) $('editor').close();
-        notice('처리했어.');
+        notice('요청을 처리했습니다.');
         try {
             await refresh();
         } catch (error) {
             if (error.status === 401) handleError(error);
-            else notice('저장했어. 목록을 새로고침해 줘.', true);
+            else notice('변경 사항은 저장되었습니다. 목록을 새로고침해 주세요.', true);
         }
     } catch (error) {
         if (errorTarget && error.status !== 401) errorTarget.textContent = error.message;
@@ -374,7 +374,7 @@ function actionClick(event) {
         case 'edit': inventoryAction(action, kind, id); break;
         case 'delete': {
             const asset = data.assets.find(row => row.asset_id === id);
-            edit('자산 삭제', `<p>${escapeHtml(asset.asset_name)}을(를) 삭제할까?</p>`,
+            edit('자산 삭제', `<p>‘${escapeHtml(asset.asset_name)}’ 자산을 삭제하시겠습니까?</p>`,
                 () => api('assets/' + id, 'DELETE'), '삭제');
             break;
         }
@@ -393,7 +393,7 @@ function actionClick(event) {
                 { status: action === 'approve' ? 'APPROVED' : 'REJECTED' }));
             break;
         case 'return':
-            edit(resource.title + ' 회수', '<p>이 배정을 회수할까?</p>',
+            edit(resource.title + ' 회수', '<p>이 배정을 회수하시겠습니까?</p>',
                 () => api(routes[resource.assignments] + '/' + id + '/return', 'PATCH'), '회수');
             break;
     }
