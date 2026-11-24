@@ -174,6 +174,7 @@ function assetPage() {
     ).map(row => [
         row.asset_id, escapeHtml(row.asset_name), escapeHtml(row.category_name), pill(row.status),
         `<div class="row-actions">${button('수정', 'edit-asset', row.asset_id)}
+          ${row.status === 'AVAILABLE' ? button('배정', 'allocate-asset', row.asset_id, 'primary') : ''}
           ${button('배정 이력', 'asset-history', row.asset_id)}
           ${button('삭제', 'delete-asset', row.asset_id, 'danger')}</div>`
     ]);
@@ -332,6 +333,27 @@ function editAssignment(kind, id) {
         }), '배정');
 }
 
+function editAssetAllocation(assetId) {
+    const asset = data.assets.find(row => row.asset_id === assetId);
+    if (!asset || asset.status !== 'AVAILABLE') return;
+
+    const requests = (data.assetRequests ?? []).filter(row =>
+        row.category_id === asset.category_id && row.display_status === 'APPROVED');
+
+    const assetLabel = '<p>배정할 자산 · ' + escapeHtml(asset.asset_name) + '</p>';
+    if (!requests.length) {
+        notice('이 자산 종류에 승인된 미배정 신청이 없습니다. 신청 관리에서 같은 종류의 신청을 승인해 주세요.', true);
+        return;
+    }
+
+    const choices = requests.map(row => [
+        row.request_id, '#' + row.request_id + ' ' + row.employee_name + ' · ' + row.category_name
+    ]);
+    edit('자산 배정', assetLabel + selectField('배정할 신청', 'request_id', choices), form =>
+        api(routes.assetAssignments, 'POST', { request_id: Number(values(form).request_id), asset_id: assetId }),
+    '배정');
+}
+
 async function perform(send, errorTarget) {
     if (busy) return;
     busy = true;
@@ -389,6 +411,7 @@ function actionClick(event) {
             break;
         case 'request': editRequest(kind); break;
         case 'assign': editAssignment(kind, id); break;
+        case 'allocate': editAssetAllocation(id); break;
         case 'approve':
         case 'reject':
             void perform(() => api(routes[resource.requests] + '/' + id, 'PATCH',
